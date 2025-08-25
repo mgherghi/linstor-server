@@ -51,8 +51,8 @@ services:
 
   linstor-gui:
     build:
-      context: https://github.com/LINBIT/linstor-gui.git
-      dockerfile: Dockerfile
+      context: https://github.com/mgherghi/linstor-server.git
+      dockerfile: Dockerfile.linstor-gui
     image: linstor-gui:latest
     container_name: linstor-gui
     restart: unless-stopped
