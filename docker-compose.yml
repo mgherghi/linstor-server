@@ -2,7 +2,7 @@ version: "3.9"
 
 x-common-env: &common_env
   # Set this VIP/DNS so satellites and clients always hit the active controller
-  LINSTOR_CONTROLLERS: "${LINSTOR_CONTROLLERS:-linbit-ha.local:3370}"
+  LINSTOR_CONTROLLERS: "${LINSTOR_CONTROLLERS:-4.0.0.7:3370}"
 
 x-satellite-mounts: &satellite_mounts
   - /etc/linstor:/etc/linstor
@@ -18,18 +18,28 @@ services:
   linstor-controller:
     # Build the controller image straight from source
     build:
-      context: https://github.com/LINBIT/linstor-server.git#v1.31.3
+      context: https://github.com/mgherghi/linstor-server-full.git#stable
       dockerfile: Dockerfile.controller
-    image: linstor-controller:src-v1.31.3
+    image: linstor-controller:latest
+#    image: linstor-controller:latest
     container_name: linstor-controller
-    hostname: ${NODE_HOSTNAME:-r730xd-1}
+    hostname: ${NODE_HOSTNAME:-linstor-controller}
     network_mode: host
     restart: unless-stopped
     environment:
-      <<: *common_env
+      LINSTOR_ROLE: "both"                 # controller + satellite
+      CONTROLLER_BIND_ADDR: "0.0.0.0"
+      CONTROLLER_BIND_PORT: "3370"
+      LINSTOR_CONTROLLERS: "${LINSTOR_CONTROLLERS:-4.0.0.7:3370}"
     volumes:
-      - /etc/linstor:/etc/linstor
-      - /var/lib/linstor:/var/lib/linstor
+      - /etc/linstor:/etc/linstor          # will contain NO [db] in linstor.toml or no file at all
+      - /var/lib/linstor:/var/lib/linstor  # H2 lives here by default
+      - /etc/drbd:/etc/drbd
+      - /var/lib/drbd:/var/lib/drbd
+      - /dev:/dev
+      - /sys:/sys
+      - /lib/modules:/lib/modules:ro
+      - /run/udev:/run/udev:ro
       # Provide controller configuration (DB, bind address/port)
       - ./linstor.toml:/etc/linstor/linstor.toml:ro
     healthcheck:
@@ -42,11 +52,11 @@ services:
   linstor-satellite:
     # Build the satellite image straight from source
     build:
-      context: https://github.com/LINBIT/linstor-server.git#v1.31.3
+      context: https://github.com/mgherghi/linstor-server-full.git#stable
       dockerfile: Dockerfile.satellite
-    image: linstor-satellite:src-v1.31.3
+    image: linstor-satellite:latest
     container_name: linstor-satellite
-    hostname: ${NODE_HOSTNAME:-r730xd-1}
+    hostname: ${NODE_HOSTNAME:-linstor-satellite}
     network_mode: host
     privileged: true  # simplest path to host DRBD + devices
     restart: unless-stopped
@@ -63,22 +73,3 @@ services:
       timeout: 5s
       retries: 15
       start_period: 60s
-
-  # Handy toolbox with the LINSTOR CLI & Python API, built from source too
-  linstor-client:
-    build:
-      context: .
-      dockerfile: Dockerfile.client-src
-    image: linstor-client:src
-    container_name: linstor-client
-    network_mode: host
-    depends_on:
-      linstor-controller:
-        condition: service_started
-    restart: unless-stopped
-    environment:
-      <<: *common_env
-    volumes:
-      - /etc/linstor:/etc/linstor
-      - /var/lib/linstor:/var/lib/linstor
-    command: ["bash", "-lc", "sleep infinity"]
