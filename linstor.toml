@@ -1,0 +1,9 @@
+[controller]
+bind_address = "0.0.0.0"
+port = 3370
+
+[db]
+# Neon Postgres (SSL + channel binding required)
+connection_url = "jdbc:postgresql://ep-restless-moon-aafkhk5z-pooler.westus3.azure.neon.tech/LINBIT?sslmode=require&channel_binding=require"
+password = "mypassword"
+username = "admin"
