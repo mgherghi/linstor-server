@@ -1,0 +1,9 @@
+FROM debian:13-slim
+
+USER root
+RUN apt update -y && apt install wget -y && wget https://raw.githubusercontent.com/mgherghi/CalPoly_Infrastructure/refs/heads/main/Infrastructure/linbit.asc -O /etc/apt/keyrings/linbit.asc && wait && wget https://raw.githubusercontent.com/mgherghi/CalPoly_Infrastructure/refs/heads/main/Infrastructure/linstor.sources -O /etc/apt/sources.list.d/linstor.sources && wait && apt update -y
+RUN apt install linstor-gui -y
+
+EXPOSE 8000/tcp
+
+CMD ["tail", "-f", "/dev/null"]
