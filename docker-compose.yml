@@ -18,7 +18,7 @@ services:
   linstor-controller:
     # Build the controller image straight from source
     build:
-      context: https://github.com/mgherghi/linstor-server-full.git#stable
+      context: https://github.com/mgherghi/linstor-server-full.git
       dockerfile: Dockerfile.controller
     image: linstor-controller:latest
 #    image: linstor-controller:latest
