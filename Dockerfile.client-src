@@ -1,0 +1,19 @@
+# syntax=docker/dockerfile:1.7
+FROM debian:13-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      ca-certificates curl git python3 python3-pip bash \
+    && rm -rf /var/lib/apt/lists/*
+
+# Build the Python client and API from source
+# linstor-client depends on the python API
+RUN set -eux; \
+    git clone --depth=1 https://github.com/LINBIT/linstor-api-py /tmp/linstor-api-py; \
+    pip3 install --no-cache-dir /tmp/linstor-api-py; \
+    git clone --depth=1 https://github.com/LINBIT/linstor-client /tmp/linstor-client; \
+    pip3 install --no-cache-dir /tmp/linstor-client; \
+    rm -rf /tmp/linstor-api-py /tmp/linstor-client
+
+# Convenience: a login shell
+CMD ["bash"]
