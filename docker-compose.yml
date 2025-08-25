@@ -49,10 +49,23 @@ services:
       retries: 15
       start_period: 60s
 
+  linstor-gui:
+    build:
+      context: https://github.com/LINBIT/linstor-gui.git
+      dockerfile: Dockerfile
+    image: linstor-gui:latest
+    container_name: linstor-gui
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - LB_LINSTOR_API_HOST=http://4.0.0.7:3370
+      #- LB_GATEWAY_API_HOST=http://192.168.123.105:8080
+
+
   linstor-satellite:
     # Build the satellite image straight from source
     build:
-      context: https://github.com/mgherghi/linstor-server-full.git#stable
+      context: https://github.com/mgherghi/linstor-server-full.git
       dockerfile: Dockerfile.satellite
     image: linstor-satellite:latest
     container_name: linstor-satellite
